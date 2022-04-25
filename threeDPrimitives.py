@@ -13,7 +13,7 @@ class Primitive(QtCore.QObject):
         self.m_Entity = Qt3DCore.QEntity(self.m_rootEntity)
 
         self.m_material = Qt3DExtras.QPhongMaterial(
-            diffuse=QtGui.QColor("#665423"))
+            diffuse=QtGui.QColor(QtCore.Qt.gray))
         self.transform = Qt3DCore.QTransform(
             scale=1.3, translation=self.m_cameraEntity.viewCenter(),
         )
@@ -40,6 +40,7 @@ class Cube(Primitive):
     def __init__(self, root_entity=None, cameraEntity=None):
         super().__init__(root_entity, cameraEntity)
         self.cuboid = Qt3DExtras.QCuboidMesh()
+
         self.m_Entity.addComponent(self.cuboid)
         self.m_displayName = f'Cube {Cube.cubeTag}'
         self.transform.setScale(4.0)

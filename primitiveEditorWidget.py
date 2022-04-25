@@ -30,9 +30,9 @@ class XYZEditorWidget(QtWidgets.QWidget):
 
         self.onlyDouble = QtGui.QDoubleValidator(self)
 
-        self.X_edit = QtWidgets.QLineEdit(str(self.vector.x()))
-        self.Y_edit = QtWidgets.QLineEdit(str(self.vector.y()))
-        self.Z_edit = QtWidgets.QLineEdit(str(self.vector.z()))
+        self.X_edit = QtWidgets.QLineEdit(str(round(self.vector.x(), 5)))
+        self.Y_edit = QtWidgets.QLineEdit(str(round(self.vector.y(), 5)))
+        self.Z_edit = QtWidgets.QLineEdit(str(round(self.vector.z(), 5)))
 
         self.X_edit.textChanged.connect(self.x_changed)
         self.Y_edit.textChanged.connect(self.y_changed)
@@ -159,7 +159,7 @@ class SphereEditorWidget(PrimitiveEditorWidget):
         PrimitiveEditorWidget.__init__(self, listItem)
 
         self.radius_label = QtWidgets.QLabel("Radius")
-        self.radius_edit = QtWidgets.QLineEdit(str(listItem.sceneObject.sphereMesh.radius()))
+        self.radius_edit = QtWidgets.QLineEdit(str(round(listItem.sceneObject.sphereMesh.radius(), 5)))
         self.radius_edit.textChanged.connect(self.radius_changed)
 
         self.layout.addWidget(self.radius_label)
@@ -182,9 +182,14 @@ class CubeEditorWidget(PrimitiveEditorWidget):
         self.width_label = QtWidgets.QLabel("Width")
         self.height_label = QtWidgets.QLabel("Height")
 
-        self.length_edit = QtWidgets.QLineEdit()
-        self.width_edit = QtWidgets.QLineEdit()
-        self.height_edit = QtWidgets.QLineEdit()
+        self.length_edit = QtWidgets.QLineEdit(str(round(self.listItem.sceneObject.cuboid.xExtent(), 5)))
+        self.width_edit = QtWidgets.QLineEdit(str(round(self.listItem.sceneObject.cuboid.zExtent(), 5)))
+        self.height_edit = QtWidgets.QLineEdit(
+            str(round(self.listItem.sceneObject.cuboid.yExtent(), 5)))
+
+        self.length_edit.textChanged.connect(self.length_changed)
+        self.width_edit.textChanged.connect(self.width_changed)
+        self.height_edit.textChanged.connect(self.height_changed)
 
         self.layout.addWidget(self.length_label)
         self.layout.addWidget(self.length_edit)
@@ -197,3 +202,18 @@ class CubeEditorWidget(PrimitiveEditorWidget):
 
         self.setLayout(self.layout)
         self.show()
+    
+    def length_changed(self, text):
+        num = validate(text)
+        if num:
+            self.listItem.sceneObject.cuboid.setXExtent(num)
+
+    def width_changed(self, text):
+        num = validate(text)
+        if num:
+            self.listItem.sceneObject.cuboid.setZExtent(num)
+
+    def height_changed(self, text):
+        num = validate(text)
+        if num:
+            self.listItem.sceneObject.cuboid.setYExtent(num)
