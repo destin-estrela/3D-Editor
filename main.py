@@ -16,7 +16,6 @@ from primitiveEditorWidget import *
 # https://stackoverflow.com/questions/4625102/how-to-replace-a-widget-with-another-using-qt
 # https://stackoverflow.com/questions/33793315/how-to-use-spacers-in-qt
 
-
 class PrimitiveListItem(QtWidgets.QListWidgetItem):
       def __init__(self, name, sceneObject):
         super().__init__(name)
@@ -27,31 +26,27 @@ class CubeListItem(PrimitiveListItem):
     def __init__(self, name, sceneObject):
         super().__init__(name, sceneObject)
 
-    def activatePrimitiveEditor(self, editorWidget):
+    def activatePrimitiveEditor(self):
         new_widget = RectangleEditorWidget(self)
-        containing_layout = editorWidget.parent().layout()
-        containing_layout.replaceWidget(editorWidget, new_widget)
         return new_widget
 
 class SphereListItem(PrimitiveListItem):
     def __init__(self, name, sceneObject):
         super().__init__(name, sceneObject)
     
-    def activatePrimitiveEditor(self, editorWidget):
+    def activatePrimitiveEditor(self):
         new_widget = SphereEditorWidget(self)
-        containing_layout = editorWidget.parent().layout()
-        containing_layout.replaceWidget(editorWidget, new_widget)
-        
         return new_widget
 
 
 class SceneEditor(QtCore.QObject):
-    def __init__(self, root_entity=None, cameraEntity=None, objectListWidget=None, primitiveEditorWidget=None):
+    def __init__(self, root_entity=None, cameraEntity=None, objectListWidget=None, mainLayout=None):
         super().__init__()
+        self.mainLayout = mainLayout
         self.m_rootEntity = root_entity
         self.m_cameraEntity = cameraEntity
         self.m_objectListWidget = objectListWidget
-        self.m_primitiveEditorWidget = primitiveEditorWidget
+        self.m_currentPrimitiveObjectEditor = None
 
         # connect list widget to functionality
         self.m_objectListWidget.itemClicked.connect(self.activatePrimitiveEditor)
@@ -69,9 +64,13 @@ class SceneEditor(QtCore.QObject):
         self.m_objectListWidget.addItem(sphereListItem)
     
     def activatePrimitiveEditor(self, item):
-        newWidget = item.activatePrimitiveEditor(self.m_primitiveEditorWidget)
-        self.m_primitiveEditorWidget.setParent(None)
-        self.m_primitiveEditorWidget = newWidget
+        newWidget = item.activatePrimitiveEditor()
+        if self.m_currentPrimitiveObjectEditor:
+            self.m_currentPrimitiveObjectEditor.deleteLater()
+
+        self.mainLayout.addWidget(newWidget)
+        self.m_currentPrimitiveObjectEditor = newWidget
+
        
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
@@ -87,13 +86,11 @@ if __name__ == "__main__":
     hLayout = QtWidgets.QHBoxLayout(widget)
     
     ##
-    leftWindow = QtWidgets.QWidget()
     rightWindow = QtWidgets.QVBoxLayout()
     rightWindow.setAlignment(QtCore.Qt.AlignTop)
 
-    hLayout.addWidget(leftWindow)
-    hLayout.addWidget(container, 1)
     hLayout.addLayout(rightWindow)
+    hLayout.addWidget(container, 1)
 
     widget.setWindowTitle("3D Editor")
 
@@ -122,7 +119,7 @@ if __name__ == "__main__":
     camController.setCamera(cameraEntity)
     objectList = QtWidgets.QListWidget(widget)
 
-    modifier = SceneEditor(rootEntity, cameraEntity, objectList, leftWindow)
+    modifier = SceneEditor(rootEntity, cameraEntity, objectList, hLayout)
 
     view.setRootEntity(rootEntity)
 

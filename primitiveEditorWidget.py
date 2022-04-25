@@ -75,18 +75,26 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         self.layout = layout
         self.setLayout(layout)
 
+        # delete button
+        self.deleteButton = QtWidgets.QPushButton(self, "Delete")
+        self.deleteButton.setText("Delete")
+        self.deleteButton.clicked.connect(self.delete_primitive)
+        layout.addWidget(self.deleteButton)
+
+
         # name field
         self.name = QtWidgets.QLabel("Name")
         layout.addWidget(self.name)
         self.name_edit_box = QtWidgets.QLineEdit(listItem.sceneObject.m_displayName)
         layout.addWidget(self.name_edit_box)
+        self.name_edit_box.textChanged.connect(self.name_changed)
 
         # color field
-        self.label = QtWidgets.QLabel("Color")
+        self.color_label = QtWidgets.QLabel("Color")
         self.colorButton = QtWidgets.QPushButton(self)
         self.colorButton.clicked.connect(self.open_color_dialog)
 
-        layout.addWidget(self.label)
+        layout.addWidget(self.color_label)
         layout.addWidget(self.colorButton)
 
         self.color_dialog = QtWidgets.QColorDialog()
@@ -105,9 +113,14 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         self.quaternion_widget = QuaternionEditorWidget()
         layout.addWidget(self.quaternion_widget)
 
-        self.name_edit_box.textChanged.connect(self.name_changed)
-
         self.show()
+
+    def delete_primitive(self):
+        listView = self.listItem.listWidget()
+        self.listItem.sceneObject.m_Entity.setEnabled(False)
+        self.listItem.sceneObject.deleteLater()
+        listView.takeItem(listView.row(self.listItem))
+        self.hide()
 
     def name_changed(self, text):
         self.listItem.sceneObject.m_displayName = text
