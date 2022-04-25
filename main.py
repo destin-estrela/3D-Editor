@@ -87,7 +87,7 @@ if __name__ == "__main__":
     lightTransform.setTranslation(cameraEntity.position())
     lightEntity.addComponent(lightTransform)
 
-    camController = Qt3DExtras.QFirstPersonCameraController(rootEntity)
+    camController = Qt3DExtras.QOrbitCameraController(rootEntity)
     camController.setCamera(cameraEntity)
     camController
 
