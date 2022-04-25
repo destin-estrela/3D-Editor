@@ -93,6 +93,9 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         self.color_label = QtWidgets.QLabel("Color")
         self.colorButton = QtWidgets.QPushButton(self)
         self.colorButton.clicked.connect(self.open_color_dialog)
+        self.colorButton.setStyleSheet(
+            f"background-color:{ self.listItem.sceneObject.m_material.diffuse().name()}")
+
 
         layout.addWidget(self.color_label)
         layout.addWidget(self.colorButton)
@@ -131,6 +134,7 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
 
     def save_selected_color(self, new_color):
         self.colorButton.setStyleSheet(f"background-color:{new_color.name()}")
+        self.listItem.sceneObject.m_material.setDiffuse(new_color)
 
 
 class SphereEditorWidget(PrimitiveEditorWidget):
