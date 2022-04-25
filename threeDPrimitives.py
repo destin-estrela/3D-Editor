@@ -14,7 +14,11 @@ class Primitive(QtCore.QObject):
 
         self.m_material = Qt3DExtras.QPhongMaterial(
             diffuse=QtGui.QColor("#665423"))
-
+        self.transform = Qt3DCore.QTransform(
+            scale=1.3, translation=self.m_cameraEntity.viewCenter(),
+        )
+        self.m_Entity.addComponent(self.m_material)
+        self.m_Entity.addComponent(self.transform)
 
 class Sphere(Primitive):
     sphereTag = 1
@@ -25,13 +29,7 @@ class Sphere(Primitive):
         self.sphereMesh = Qt3DExtras.QSphereMesh(
             rings=20, slices=20, radius=2)
 
-        self.sphereTransform = Qt3DCore.QTransform(
-            scale=1.3, translation=self.m_cameraEntity.viewCenter(),
-        )
-  
         self.m_Entity.addComponent(self.sphereMesh)
-        self.m_Entity.addComponent(self.m_material)
-        self.m_Entity.addComponent(self.sphereTransform)
         self.m_displayName = f'Sphere {Sphere.sphereTag}'
         Sphere.sphereTag += 1
 
@@ -42,12 +40,7 @@ class Cube(Primitive):
     def __init__(self, root_entity=None, cameraEntity=None):
         super().__init__(root_entity, cameraEntity)
         self.cuboid = Qt3DExtras.QCuboidMesh()
-        self.cuboidTransform = Qt3DCore.QTransform(
-            scale=4.0, translation=self.m_cameraEntity.viewCenter(),
-        )
-        
         self.m_Entity.addComponent(self.cuboid)
-        self.m_Entity.addComponent(self.m_material)
-        self.m_Entity.addComponent(self.cuboidTransform)
         self.m_displayName = f'Cube {Cube.cubeTag}'
+        self.transform.setScale(4.0)
         Cube.cubeTag += 1

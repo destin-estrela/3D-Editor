@@ -1,3 +1,4 @@
+from multiprocessing.sharedctypes import Value
 import sys
 from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.Qt3DCore import Qt3DCore
@@ -38,18 +39,32 @@ class QuaternionEditorWidget(QtWidgets.QWidget):
 
 
 class TransformEditorWidget(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, transform):
         QtWidgets.QWidget.__init__(self)
         layout = QtWidgets.QHBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignTop)
+        self.transform = transform
+        self.vector = transform.translation()
 
         self.X_label = QtWidgets.QLabel("X")
         self.Y_label = QtWidgets.QLabel("Y")
         self.Z_label = QtWidgets.QLabel("Z")
 
-        self.X_edit = QtWidgets.QLineEdit()
-        self.Y_edit = QtWidgets.QLineEdit()
-        self.Z_edit = QtWidgets.QLineEdit()
+        self.onlyDouble = QtGui.QDoubleValidator(self)
+
+
+
+        self.X_edit = QtWidgets.QLineEdit(str(self.vector.x()))
+        self.Y_edit = QtWidgets.QLineEdit(str(self.vector.y()))
+        self.Z_edit = QtWidgets.QLineEdit(str(self.vector.z()))
+
+        self.X_edit.textChanged.connect(self.x_changed)
+        self.Y_edit.textChanged.connect(self.y_changed)
+        self.Z_edit.textChanged.connect(self.z_changed)
+
+        self.X_edit.setValidator(self.onlyDouble)
+        self.Y_edit.setValidator(self.onlyDouble)
+        self.Z_edit.setValidator(self.onlyDouble)
 
         layout.addWidget(self.X_label)
         layout.addWidget(self.X_edit)
@@ -62,7 +77,31 @@ class TransformEditorWidget(QtWidgets.QWidget):
 
         self.setLayout(layout)
         self.show()
+    
+    def validate(self,text):
+        try:
+            res = float(text)
+            return res
+        except ValueError:
+            return None
 
+    def x_changed(self, text):
+        number = self.validate(text)
+        if number:
+            self.vector.setX(float(text))
+            self.transform.setTranslation(self.vector)
+
+    def y_changed(self, text):
+        number = self.validate(text)
+        if number:
+            self.vector.setY(float(text))
+            self.transform.setTranslation(self.vector)
+
+    def z_changed(self, text):
+        number = self.validate(text)
+        if number:
+            self.vector.setZ(float(text))
+            self.transform.setTranslation(self.vector)
 
 class PrimitiveEditorWidget(QtWidgets.QWidget):
     def __init__(self, listItem):
@@ -107,7 +146,7 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         self.transform_label = QtWidgets.QLabel("Transform")
         layout.addWidget(self.transform_label)
 
-        self.transform_widget = TransformEditorWidget()
+        self.transform_widget = TransformEditorWidget(self.listItem.sceneObject.transform)
         layout.addWidget(self.transform_widget)
 
         # quaternion field
@@ -135,7 +174,6 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
     def save_selected_color(self, new_color):
         self.colorButton.setStyleSheet(f"background-color:{new_color.name()}")
         self.listItem.sceneObject.m_material.setDiffuse(new_color)
-
 
 class SphereEditorWidget(PrimitiveEditorWidget):
     def __init__(self, listItem):
