@@ -21,13 +21,14 @@ class PrimitiveListItem(QtWidgets.QListWidgetItem):
       def __init__(self, name, sceneObject):
         super().__init__(name)
         self.sceneObject = sceneObject
+        self.name = name
 
 class CubeListItem(PrimitiveListItem):
     def __init__(self, name, sceneObject):
         super().__init__(name, sceneObject)
 
     def activatePrimitiveEditor(self, editorWidget):
-        new_widget = RectangleEditorWidget()
+        new_widget = RectangleEditorWidget(self)
         containing_layout = editorWidget.parent().layout()
         containing_layout.replaceWidget(editorWidget, new_widget)
         return new_widget
@@ -37,7 +38,7 @@ class SphereListItem(PrimitiveListItem):
         super().__init__(name, sceneObject)
     
     def activatePrimitiveEditor(self, editorWidget):
-        new_widget = SphereEditorWidget()
+        new_widget = SphereEditorWidget(self)
         containing_layout = editorWidget.parent().layout()
         containing_layout.replaceWidget(editorWidget, new_widget)
         

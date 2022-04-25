@@ -65,8 +65,10 @@ class TransformEditorWidget(QtWidgets.QWidget):
 
 
 class PrimitiveEditorWidget(QtWidgets.QWidget):
-    def __init__(self):
+    def __init__(self, listItem):
         QtWidgets.QWidget.__init__(self)
+
+        self.listItem = listItem
 
         layout = QtWidgets.QVBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignTop)
@@ -74,9 +76,9 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         self.setLayout(layout)
 
         # name field
-        self.name = QtWidgets.QLabel("Object Name")
+        self.name = QtWidgets.QLabel("Name")
         layout.addWidget(self.name)
-        self.name_edit_box = QtWidgets.QLineEdit()
+        self.name_edit_box = QtWidgets.QLineEdit(listItem.sceneObject.m_displayName)
         layout.addWidget(self.name_edit_box)
 
         # color field
@@ -103,12 +105,13 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         self.quaternion_widget = QuaternionEditorWidget()
         layout.addWidget(self.quaternion_widget)
 
-        self.name_edit_box.textChanged.connect(self.line_edit_text_changed)
+        self.name_edit_box.textChanged.connect(self.name_changed)
 
         self.show()
 
-    def line_edit_text_changed(self, text):
-        self.label.setText(text)
+    def name_changed(self, text):
+        self.listItem.sceneObject.m_displayName = text
+        self.listItem.setText(text)
 
     def open_color_dialog(self):
         self.color_dialog.open()
@@ -118,8 +121,8 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
 
 
 class SphereEditorWidget(PrimitiveEditorWidget):
-    def __init__(self):
-        PrimitiveEditorWidget.__init__(self)
+    def __init__(self, listItem):
+        PrimitiveEditorWidget.__init__(self, listItem)
 
         self.radius_label = QtWidgets.QLabel("Radius")
         self.radius_edit = QtWidgets.QLineEdit()
@@ -132,8 +135,8 @@ class SphereEditorWidget(PrimitiveEditorWidget):
 
 
 class RectangleEditorWidget(PrimitiveEditorWidget):
-    def __init__(self):
-        PrimitiveEditorWidget.__init__(self)
+    def __init__(self, listItem):
+        PrimitiveEditorWidget.__init__(self, listItem)
 
         self.length_label = QtWidgets.QLabel("Length")
         self.width_label = QtWidgets.QLabel("Width")
