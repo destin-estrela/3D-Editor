@@ -50,7 +50,6 @@ class SceneEditor(QtCore.QObject):
         self.m_rootEntity = root_entity
         self.m_cameraEntity = cameraEntity
         self.m_objectListWidget = objectListWidget
-        self.m_objectDict = {}
         self.m_primitiveEditorWidget = primitiveEditorWidget
 
         # connect list widget to functionality
@@ -58,14 +57,15 @@ class SceneEditor(QtCore.QObject):
 
     def createCube(self):
         cube = Cube(self.m_rootEntity, self.m_cameraEntity)
-        self.m_objectDict[cube.m_displayName] = cube 
-        self.m_objectListWidget.addItem(CubeListItem(cube.m_displayName, cube))
+        cubeListItem = CubeListItem(cube.m_displayName, cube)
+        self.activatePrimitiveEditor(cubeListItem)
+        self.m_objectListWidget.addItem(cubeListItem)
 
     def createSphere(self):
         sphere = Sphere(self.m_rootEntity, self.m_cameraEntity)
-        self.m_objectDict[sphere.m_displayName] = sphere
-        self.m_objectListWidget.addItem(
-            SphereListItem(sphere.m_displayName, sphere))
+        sphereListItem = SphereListItem(sphere.m_displayName, sphere)
+        self.activatePrimitiveEditor(sphereListItem)
+        self.m_objectListWidget.addItem(sphereListItem)
     
     def activatePrimitiveEditor(self, item):
         newWidget = item.activatePrimitiveEditor(self.m_primitiveEditorWidget)
