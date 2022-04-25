@@ -9,8 +9,10 @@ from PySide2.Qt3DInput import Qt3DInput
 # https://stackoverflow.com/questions/60585973/pyside2-qt3d-mesh-does-not-show-up
 # https://wiki.qt.io/Qt_for_Python_Tutorial_ClickableButton
 # https://stackoverflow.com/questions/38923978/object-going-out-of-scope-and-being-garbage-collected-in-pyside-pyqt
+# https://stackoverflow.com/questions/49385525/adding-items-to-qlistview
 
 class Sphere(QtCore.QObject):
+    sphereTag = 1
     def __init__(self, root_entity=None, cameraEntity=None):
         super().__init__()
         self.m_rootEntity = root_entity
@@ -29,9 +31,12 @@ class Sphere(QtCore.QObject):
         self.m_sphereEntity.addComponent(self.sphereMesh)
         self.m_sphereEntity.addComponent(self.m_defaultMaterial)
         self.m_sphereEntity.addComponent(self.sphereTransform)
+        self.m_displayName = f'Sphere {Sphere.sphereTag}'
+        Sphere.sphereTag += 1
         
 
 class Cube(QtCore.QObject):
+    cubeTag = 1
     def __init__(self, root_entity=None, cameraEntity=None):
         super().__init__()
         self.m_rootEntity = root_entity
@@ -47,20 +52,26 @@ class Cube(QtCore.QObject):
         self.m_cuboidEntity.addComponent(self.cuboid)
         self.m_cuboidEntity.addComponent(self.cuboidMaterial)
         self.m_cuboidEntity.addComponent(self.cuboidTransform)
+        self.m_displayName = f'Cube {Cube.cubeTag}'
+        Cube.cubeTag += 1
 
 class SceneModifier(QtCore.QObject):
-    def __init__(self, root_entity=None, cameraEntity=None):
+    def __init__(self, root_entity=None, cameraEntity=None, objectListWidget=None):
         super().__init__()
         self.m_rootEntity = root_entity
         self.m_cameraEntity = cameraEntity
-        self.m_objectList = []
+        self.m_objectListWidget = objectListWidget
+        self.m_objectDict = {}
 
     def createCube(self):
-        self.m_objectList.append(
-            Cube(self.m_rootEntity, self.m_cameraEntity))
+        cube = Cube(self.m_rootEntity, self.m_cameraEntity)
+        self.m_objectDict[cube.m_displayName] = cube 
+        self.m_objectListWidget.addItem(cube.m_displayName)
 
     def createSphere(self):
-        self.m_objectList.append(Sphere(self.m_rootEntity, self.m_cameraEntity))
+        sphere = Sphere(self.m_rootEntity, self.m_cameraEntity)
+        self.m_objectDict[sphere.m_displayName] = sphere
+        self.m_objectListWidget.addItem(sphere.m_displayName)
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
@@ -104,8 +115,9 @@ if __name__ == "__main__":
 
     camController = Qt3DExtras.QOrbitCameraController(rootEntity)
     camController.setCamera(cameraEntity)
-    
-    modifier = SceneModifier(rootEntity, cameraEntity)
+    objectList = QtWidgets.QListWidget(widget)
+
+    modifier = SceneModifier(rootEntity, cameraEntity, objectList)
     print(cameraEntity.position)
 
     view.setRootEntity(rootEntity)
@@ -125,8 +137,10 @@ if __name__ == "__main__":
     vLayout.addWidget(info)
     vLayout.addWidget(createCubeButton)
     vLayout.addWidget(createSphereButton)
+    vLayout.addWidget(objectList)
 
     createCubeButton.clicked.connect(modifier.createCube)
+
     createSphereButton.clicked.connect(modifier.createSphere)
 
     widget.show()
