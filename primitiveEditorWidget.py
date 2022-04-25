@@ -6,6 +6,15 @@ from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DInput import Qt3DInput
 
+# Returns string as a float only if it can be properly converted
+# else None
+def validate(text):
+        try:
+            res = float(text)
+            return res
+        except ValueError:
+            return None
+
 class XYZEditorWidget(QtWidgets.QWidget):
     def __init__(self, transform, vector, set_vector):
         QtWidgets.QWidget.__init__(self)
@@ -45,27 +54,22 @@ class XYZEditorWidget(QtWidgets.QWidget):
         self.setLayout(layout)
         self.show()
     
-    def validate(self,text):
-        try:
-            res = float(text)
-            return res
-        except ValueError:
-            return None
+    
 
     def x_changed(self, text):
-        number = self.validate(text)
+        number = validate(text)
         if number:
             self.vector.setX(float(text))
             self.set_vector(self.vector)
 
     def y_changed(self, text):
-        number = self.validate(text)
+        number = validate(text)
         if number:
             self.vector.setY(float(text))
             self.set_vector(self.vector)
 
     def z_changed(self, text):
-        number = self.validate(text)
+        number = validate(text)
         if number:
             self.vector.setZ(float(text))
             self.set_vector(self.vector)
@@ -155,13 +159,19 @@ class SphereEditorWidget(PrimitiveEditorWidget):
         PrimitiveEditorWidget.__init__(self, listItem)
 
         self.radius_label = QtWidgets.QLabel("Radius")
-        self.radius_edit = QtWidgets.QLineEdit()
+        self.radius_edit = QtWidgets.QLineEdit(str(listItem.sceneObject.sphereMesh.radius()))
+        self.radius_edit.textChanged.connect(self.radius_changed)
 
         self.layout.addWidget(self.radius_label)
         self.layout.addWidget(self.radius_edit)
 
         self.setLayout(self.layout)
         self.show()
+    
+    def radius_changed(self, text):
+        num = validate(text)
+        if num:
+            self.listItem.sceneObject.sphereMesh.setRadius(num)
 
 
 class CubeEditorWidget(PrimitiveEditorWidget):
