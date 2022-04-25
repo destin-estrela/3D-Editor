@@ -5,17 +5,21 @@ from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DInput import Qt3DInput
 
-# SOURCE https://stackoverflow.com/questions/60585973/pyside2-qt3d-mesh-does-not-show-up
+# SOURCES
+# https://stackoverflow.com/questions/60585973/pyside2-qt3d-mesh-does-not-show-up
+# https://wiki.qt.io/Qt_for_Python_Tutorial_ClickableButton
 
 class SceneModifier(QtCore.QObject):
-    def __init__(self, root_entity=None):
+    def __init__(self, root_entity=None, cameraEntity=None):
         super().__init__()
         self.m_rootEntity = root_entity
+        self.m_cameraEntity = cameraEntity
 
+    def createCube(self):
         self.cuboid = Qt3DExtras.QCuboidMesh()
 
         self.cuboidTransform = Qt3DCore.QTransform(
-            scale=4.0, translation=QtGui.QVector3D(5.0, -4.0, 0.0),
+            scale=4.0, translation=self.m_cameraEntity.viewCenter(),
         )
 
         self.cuboidMaterial = Qt3DExtras.QPhongMaterial(diffuse=QtGui.QColor("#665423"))
@@ -25,10 +29,13 @@ class SceneModifier(QtCore.QObject):
         self.m_cuboidEntity.addComponent(self.cuboidMaterial)
         self.m_cuboidEntity.addComponent(self.cuboidTransform)
 
-        self.sphereMesh = Qt3DExtras.QSphereMesh(rings=20, slices=20, radius=2)
+    
+    def createSphere(self):
+        self.sphereMesh = Qt3DExtras.QSphereMesh(
+             rings=20, slices=20, radius=2)
 
         self.sphereTransform = Qt3DCore.QTransform(
-            scale=1.3, translation=QtGui.QVector3D(-5.0, -4.0, 0.0),
+            scale=1.3, translation=self.m_cameraEntity.viewCenter(),
         )
 
         self.sphereMaterial = Qt3DExtras.QPhongMaterial(diffuse=QtGui.QColor("#a69929"))
@@ -37,15 +44,6 @@ class SceneModifier(QtCore.QObject):
         self.m_sphereEntity.addComponent(self.sphereMesh)
         self.m_sphereEntity.addComponent(self.sphereMaterial)
         self.m_sphereEntity.addComponent(self.sphereTransform)
-
-    @QtCore.Slot(bool)
-    def enableCuboid(self, enabled):
-        self.m_cuboidEntity.setEnabled(enabled)
-
-    @QtCore.Slot(bool)
-    def enableSphere(self, enabled):
-        self.m_sphereEntity.setEnabled(enabled)
-
 
 if __name__ == "__main__":
     app = QtWidgets.QApplication(sys.argv)
@@ -89,9 +87,10 @@ if __name__ == "__main__":
 
     camController = Qt3DExtras.QOrbitCameraController(rootEntity)
     camController.setCamera(cameraEntity)
-    camController
+    
 
-    modifier = SceneModifier(rootEntity)
+    modifier = SceneModifier(rootEntity, cameraEntity)
+    print(cameraEntity.position)
 
     view.setRootEntity(rootEntity)
 
@@ -100,24 +99,19 @@ if __name__ == "__main__":
     
     info.setIconSize(QtCore.QSize(0, 0))
 
+    createCubeButton = QtWidgets.QPushButton(widget)
+    createCubeButton.setText("Create Cube")
 
-    cuboidCB = QtWidgets.QCheckBox(widget)
-    cuboidCB.setChecked(True)
-    cuboidCB.setText("Cuboid")
+    createSphereButton = QtWidgets.QPushButton(widget)
+    createSphereButton.setText("Create Sphere")
 
-    sphereCB = QtWidgets.QCheckBox(widget)
-    sphereCB.setChecked(True)
-    sphereCB.setText("Sphere")
 
     vLayout.addWidget(info)
-    vLayout.addWidget(cuboidCB)
-    vLayout.addWidget(sphereCB)
+    vLayout.addWidget(createCubeButton)
+    vLayout.addWidget(createSphereButton)
 
-    cuboidCB.stateChanged.connect(modifier.enableCuboid)
-    sphereCB.stateChanged.connect(modifier.enableSphere)
-
-    cuboidCB.setChecked(True)
-    sphereCB.setChecked(True)
+    createCubeButton.clicked.connect(modifier.createCube)
+    createSphereButton.clicked.connect(modifier.createSphere)
 
     widget.show()
     widget.resize(1200, 800)
