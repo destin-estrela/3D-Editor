@@ -27,7 +27,7 @@ class CubeListItem(PrimitiveListItem):
         super().__init__(name, sceneObject)
 
     def activatePrimitiveEditor(self):
-        new_widget = RectangleEditorWidget(self)
+        new_widget = CubeEditorWidget(self)
         return new_widget
 
 class SphereListItem(PrimitiveListItem):

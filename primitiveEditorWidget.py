@@ -6,53 +6,20 @@ from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DInput import Qt3DInput
 
-class QuaternionEditorWidget(QtWidgets.QWidget):
-    def __init__(self):
-        QtWidgets.QWidget.__init__(self)
-        layout = QtWidgets.QHBoxLayout()
-        layout.setAlignment(QtCore.Qt.AlignTop)
-
-        self.W_label = QtWidgets.QLabel("W")
-        self.X_label = QtWidgets.QLabel("X")
-        self.Y_label = QtWidgets.QLabel("Y")
-        self.Z_label = QtWidgets.QLabel("Z")
-
-        self.W_edit = QtWidgets.QLineEdit()
-        self.X_edit = QtWidgets.QLineEdit()
-        self.Y_edit = QtWidgets.QLineEdit()
-        self.Z_edit = QtWidgets.QLineEdit()
-
-        layout.addWidget(self.W_label)
-        layout.addWidget(self.W_edit)
-
-        layout.addWidget(self.X_label)
-        layout.addWidget(self.X_edit)
-
-        layout.addWidget(self.Y_label)
-        layout.addWidget(self.Y_edit)
-
-        layout.addWidget(self.Z_label)
-        layout.addWidget(self.Z_edit)
-
-        self.setLayout(layout)
-        self.show()
-
-
-class TransformEditorWidget(QtWidgets.QWidget):
-    def __init__(self, transform):
+class XYZEditorWidget(QtWidgets.QWidget):
+    def __init__(self, transform, vector, set_vector):
         QtWidgets.QWidget.__init__(self)
         layout = QtWidgets.QHBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignTop)
         self.transform = transform
-        self.vector = transform.translation()
+        self.vector = vector
+        self.set_vector = set_vector
 
         self.X_label = QtWidgets.QLabel("X")
         self.Y_label = QtWidgets.QLabel("Y")
         self.Z_label = QtWidgets.QLabel("Z")
 
         self.onlyDouble = QtGui.QDoubleValidator(self)
-
-
 
         self.X_edit = QtWidgets.QLineEdit(str(self.vector.x()))
         self.Y_edit = QtWidgets.QLineEdit(str(self.vector.y()))
@@ -89,19 +56,19 @@ class TransformEditorWidget(QtWidgets.QWidget):
         number = self.validate(text)
         if number:
             self.vector.setX(float(text))
-            self.transform.setTranslation(self.vector)
+            self.set_vector(self.vector)
 
     def y_changed(self, text):
         number = self.validate(text)
         if number:
             self.vector.setY(float(text))
-            self.transform.setTranslation(self.vector)
+            self.set_vector(self.vector)
 
     def z_changed(self, text):
         number = self.validate(text)
         if number:
             self.vector.setZ(float(text))
-            self.transform.setTranslation(self.vector)
+            self.set_vector(self.vector)
 
 class PrimitiveEditorWidget(QtWidgets.QWidget):
     def __init__(self, listItem):
@@ -143,19 +110,27 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         self.color_dialog.currentColorChanged.connect(self.save_selected_color)
 
         # transform field
-        self.transform_label = QtWidgets.QLabel("Transform")
+        self.transform_label = QtWidgets.QLabel("Position")
         layout.addWidget(self.transform_label)
 
-        self.transform_widget = TransformEditorWidget(self.listItem.sceneObject.transform)
+        self.transform_widget = XYZEditorWidget(
+            self.listItem.sceneObject.transform, self.listItem.sceneObject.transform.translation(), self.listItem.sceneObject.transform.setTranslation)
         layout.addWidget(self.transform_widget)
 
         # quaternion field
-        self.quaternion_label = QtWidgets.QLabel("Quaternion")
+        self.quaternion_label = QtWidgets.QLabel("Rotation")
         layout.addWidget(self.quaternion_label)
-        self.quaternion_widget = QuaternionEditorWidget()
-        layout.addWidget(self.quaternion_widget)
+
+        self.rotation_widget = XYZEditorWidget(
+            self.listItem.sceneObject.transform, self.listItem.sceneObject.transform.rotation().toEulerAngles(), self.set_rotation)
+        layout.addWidget(self.rotation_widget)
+        
 
         self.show()
+    
+    def set_rotation(self, vector):
+        quat = QtGui.QQuaternion.fromEulerAngles(vector)
+        self.listItem.sceneObject.transform.setRotation(quat)
 
     def delete_primitive(self):
         listView = self.listItem.listWidget()
@@ -189,7 +164,7 @@ class SphereEditorWidget(PrimitiveEditorWidget):
         self.show()
 
 
-class RectangleEditorWidget(PrimitiveEditorWidget):
+class CubeEditorWidget(PrimitiveEditorWidget):
     def __init__(self, listItem):
         PrimitiveEditorWidget.__init__(self, listItem)
 
