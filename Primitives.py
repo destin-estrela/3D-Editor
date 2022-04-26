@@ -1,3 +1,4 @@
+import json
 import sys
 from PySide2 import QtWidgets, QtCore, QtGui
 from PySide2.Qt3DCore import Qt3DCore
@@ -8,6 +9,10 @@ from pysondb import db
 
 
 PRIMITIVE_OBJECTS = "primitive_objects.json"
+
+"""
+Represents a generic namable, colorable three-dimensional primitive object
+"""
 class Primitive(QtCore.QObject):
     def __init__(self, root_entity=None, cameraEntity=None, persist_id=None):
         super().__init__()
@@ -25,6 +30,9 @@ class Primitive(QtCore.QObject):
         self.m_Entity.addComponent(self.m_material)
         self.m_Entity.addComponent(self.transform)
     
+    """
+    Deletes 3D object and removes from the databased 
+    """
     def remove(self):
         database = db.getDb(PRIMITIVE_OBJECTS)
         if self.persist_id:
@@ -32,15 +40,63 @@ class Primitive(QtCore.QObject):
 
         self.m_Entity.setEnabled(False)
         self.deleteLater()
+ 
+    """
+    Setters
+    """
+    def setRotation(self, vector):
+        quat = QtGui.QQuaternion.fromEulerAngles(vector)
+        self.transform.setRotation(quat)
+        self.persist()
     
-    def toDict(self):
-        translation = self.transform.translation()
-        rotation = self.transform.rotation().toEulerAngles()
-        return {'name': self.m_displayName,
-                'position': {'x': translation.x(), 'y': translation.y(), 'z': translation.z()},
-                'rotation': {'x': rotation.x(), 'y': rotation.y(), 'z': rotation.z()},
-                'color': self.m_material.diffuse().name()}
+    def setPosition(self, vector):
+        self.transform.setTranslation(vector)
+        self.persist()
 
+    def setColor(self, color):
+        self.m_material.setDiffuse(color)
+        self.persist()
+
+    def setName(self, name):
+        self.m_Entity = name
+        self.persist()
+    
+    """
+    Getters
+    """
+    def color(self):
+        return self.m_material.diffuse()
+    
+    def name(self):
+        return self.m_displayName
+
+    def position(self):
+        return self.transform.translation()
+    
+    def rotation(self):
+        return self.transform.rotation().toEulerAngles()
+
+    """
+    Restore object from a serialized representation
+    """
+    def restore(self, json_dict):
+        # restore position
+        xyz_dict = json_dict['position']
+        vector = QtGui.QVector3D(xyz_dict['x'], xyz_dict['y'], xyz_dict['z'])
+        self.set_position(vector)
+
+        # restore rotation
+        xyz_dict = json_dict['rotation']
+        vector = QtGui.QVector3D(xyz_dict['x'], xyz_dict['y'], xyz_dict['z'])
+        self.set_rotation(vector)
+
+        # restore color
+        color_str = json_dict['color']
+        self.set_color(QtGui.QColor(color_str))
+    
+    """
+    Persist object fields and save to local storage
+    """
     def persist(self):
         object_dict = self.toDict()
         database = db.getDb(PRIMITIVE_OBJECTS)
@@ -50,7 +106,21 @@ class Primitive(QtCore.QObject):
             self.persist_id = id
         else:
             database.updateById(self.persist_id, object_dict)
+    
+    """
+    Serialized representation of object
+    """ 
+    def toDict(self):
+        translation = self.transform.translation()
+        rotation = self.transform.rotation().toEulerAngles()
+        return {'name': self.m_displayName,
+                'position': {'x': translation.x(), 'y': translation.y(), 'z': translation.z()},
+                'rotation': {'x': rotation.x(), 'y': rotation.y(), 'z': rotation.z()},
+                'color': self.m_material.diffuse().name()}
 
+"""
+Represents a spherical 3D object
+"""
 class Sphere(Primitive):
     sphereTag = 1
 
@@ -69,9 +139,17 @@ class Sphere(Primitive):
         object_dict['type'] = 'sphere'
         object_dict['primitive_specific'] = {'radius': self.sphereMesh.radius()}
         return object_dict
+    
+    def radius(self):
+        return self.sphereMesh.radius()
+    
+    def setRadius(self, radius):
+        self.sphereMesh.setRadius(radius)
+        self.persist()
 
-
-
+"""
+Represents a cubical 3D object
+"""
 class Cube(Primitive):
     cubeTag = 1
 
@@ -84,7 +162,6 @@ class Cube(Primitive):
         self.transform.setScale(4.0)
         Cube.cubeTag += 1
 
-
     def toDict(self):
         object_dict = super().toDict()
         object_dict['type'] = 'cube'
@@ -93,3 +170,24 @@ class Cube(Primitive):
             'width': self.cuboid.zExtent(),
             'height': self.cuboid.yExtent()}
         return object_dict
+    
+    def length(self):
+        return self.cuboid.xExtent()
+    
+    def width(self):
+        return self.cuboid.zExtent()
+    
+    def height(self):
+        return self.cuboid.yExtent()
+    
+    def setLength(self, length):
+        self.cuboid.setXExtent(length)
+        self.persist()
+
+    def setWidth(self, length):
+        self.cuboid.setZExtent(length)
+        self.persist()
+
+    def setHeight(self, length):
+        self.cuboid.setYExtent(length)
+        self.persist()

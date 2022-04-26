@@ -39,7 +39,7 @@ class SphereListItem(PrimitiveListItem):
         return new_widget
 
 
-class SceneEditor(QtCore.QObject):
+class ShapeEditor(QtCore.QObject):
     def __init__(self, root_entity=None, cameraEntity=None, objectListWidget=None, mainLayout=None):
         super().__init__()
         self.mainLayout = mainLayout
@@ -72,6 +72,11 @@ class SceneEditor(QtCore.QObject):
 
         self.mainLayout.addWidget(newWidget)
         self.m_currentPrimitiveObjectEditor = newWidget
+
+    def restore_data(self):
+        database = db.getDb(PRIMITIVE_OBJECTS)
+        json_data = database.getAll()
+        
 
        
 if __name__ == "__main__":
@@ -121,7 +126,7 @@ if __name__ == "__main__":
     camController.setCamera(cameraEntity)
     objectList = QtWidgets.QListWidget(widget)
 
-    modifier = SceneEditor(rootEntity, cameraEntity, objectList, hLayout)
+    modifier = ShapeEditor(rootEntity, cameraEntity, objectList, hLayout)
 
     view.setRootEntity(rootEntity)
 
