@@ -14,13 +14,14 @@ PRIMITIVE_OBJECTS = "primitive_objects.json"
 Represents a generic namable, colorable three-dimensional primitive object
 """
 class Primitive(QtCore.QObject):
-    def __init__(self, root_entity, cameraEntity, persist_id=None):
+    def __init__(self, root_entity, cameraEntity, shapeEditor, persist_id=None):
         super().__init__()
         self.m_rootEntity = root_entity
         self.m_cameraEntity = cameraEntity
         self.m_Entity = Qt3DCore.QEntity(self.m_rootEntity)
         self.persist_id = persist_id
         self.m_displayName = 'Primitive Object'
+        self.shapeEditor = shapeEditor
 
         self.m_material = Qt3DExtras.QPhongMaterial(
             diffuse=QtGui.QColor(QtCore.Qt.gray))
@@ -38,6 +39,7 @@ class Primitive(QtCore.QObject):
     
     def primitiveClicked(self):
         print(f"{self.m_displayName} clicked!")
+        self.shapeEditor.handleClickedPrimitive(self)
 
     """
     Deletes 3D object and removes from the databased 
@@ -138,8 +140,8 @@ Represents a spherical 3D object
 class Sphere(Primitive):
     sphereTag = 1
 
-    def __init__(self, root_entity=None, cameraEntity=None, persist_id=None):
-        super().__init__(root_entity, cameraEntity, persist_id)
+    def __init__(self, root_entity, cameraEntity, shapeEditor, persist_id=None):
+        super().__init__(root_entity, cameraEntity, shapeEditor, persist_id)
 
         self.sphereMesh = Qt3DExtras.QSphereMesh(
             rings=20, slices=20, radius=2)
@@ -180,8 +182,8 @@ Represents a cubical 3D object
 class Cube(Primitive):
     cubeTag = 1
 
-    def __init__(self, root_entity=None, cameraEntity=None, persist_id=None):
-        super().__init__(root_entity, cameraEntity, persist_id)
+    def __init__(self, root_entity, cameraEntity, shapeEditor, persist_id=None):
+        super().__init__(root_entity, cameraEntity, shapeEditor, persist_id)
         self.cuboid = Qt3DExtras.QCuboidMesh()
 
         self.m_Entity.addComponent(self.cuboid)

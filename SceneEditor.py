@@ -40,14 +40,14 @@ class ShapeEditor(QtCore.QObject):
             self.initPrimitiveEditorWidget)
 
     def createCube(self):
-        cube = Cube(self.m_rootEntity, self.m_cameraEntity)
+        cube = Cube(self.m_rootEntity, self.m_cameraEntity, self)
         cubeListItem = CubeListItem(cube.m_displayName, cube)
         self.initPrimitiveEditorWidget(cubeListItem)
         self.m_objectListWidget.addItem(cubeListItem)
         return cubeListItem
 
     def createSphere(self):
-        sphere = Sphere(self.m_rootEntity, self.m_cameraEntity)
+        sphere = Sphere(self.m_rootEntity, self.m_cameraEntity, self)
         sphereListItem = SphereListItem(sphere.m_displayName, sphere)
         self.initPrimitiveEditorWidget(sphereListItem)
         self.m_objectListWidget.addItem(sphereListItem)
@@ -55,6 +55,13 @@ class ShapeEditor(QtCore.QObject):
 
     def initPrimitiveEditorWidget(self, item):
         self.stackedLayout.openPrimitiveEditor(item)
+    
+    def handleClickedPrimitive(self, primitive):
+        for i in range(self.m_objectListWidget.count()):
+            listItem = self.m_objectListWidget.item(i)
+            if listItem.sceneObject() == primitive:
+                self.initPrimitiveEditorWidget(listItem)
+                self.m_objectListWidget.setCurrentItem(listItem)
 
     """
     Creates and populates editor with persisted primitive objects
@@ -66,12 +73,12 @@ class ShapeEditor(QtCore.QObject):
         for primitive in json_data:
             if primitive['type'] == 'cube':
                 cube = Cube(self.m_rootEntity,
-                            self.m_cameraEntity, primitive['id'])
+                            self.m_cameraEntity, self, primitive['id'])
                 listItem = CubeListItem(cube.m_displayName, cube)
                 cube.restore(primitive)
             elif primitive['type'] == 'sphere':
                 sphere = Sphere(self.m_rootEntity,
-                                self.m_cameraEntity, primitive['id'])
+                                self.m_cameraEntity, self, primitive['id'])
                 listItem = SphereListItem(sphere.m_displayName, sphere)
                 sphere.restore(primitive)
             else:
