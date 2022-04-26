@@ -10,16 +10,21 @@ from PySide2.Qt3DInput import Qt3DInput
  Returns string as a float only if it can be properly converted.
  Otherwise, returns None without erroring.
 """
+
+
 def validate_float(text):
-        try:
-            res = float(text)
-            return res
-        except ValueError:
-            return None
+    try:
+        res = float(text)
+        return res
+    except ValueError:
+        return None
+
 
 """
 A reusable widget that allows the user to edit a 3D vector
 """
+
+
 class XYZEditorWidget(QtWidgets.QWidget):
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
@@ -54,11 +59,11 @@ class XYZEditorWidget(QtWidgets.QWidget):
         layout.addWidget(self.Z_edit)
 
         self.setLayout(layout)
-    
+
     def populate_fields(self, vector, setVector):
         self.vector = vector
         self.setVector = setVector
-        self.X_edit.setText(str(round(self.vector.x(), 5))) 
+        self.X_edit.setText(str(round(self.vector.x(), 5)))
         self.Y_edit.setText(str(round(self.vector.y(), 5)))
         self.Z_edit.setText(str(round(self.vector.z(), 5)))
 
@@ -80,9 +85,12 @@ class XYZEditorWidget(QtWidgets.QWidget):
             self.vector.setZ(number)
             self.setVector(self.vector)
 
+
 """
 The UI for editing a primitive objects fields
 """
+
+
 class PrimitiveEditorWidget(QtWidgets.QWidget):
     def __init__(self):
         QtWidgets.QWidget.__init__(self)
@@ -96,7 +104,6 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         self.deleteButton.setText("Delete")
         self.deleteButton.clicked.connect(self.delete_primitive)
         layout.addWidget(self.deleteButton)
-
 
         # name field
         self.name_label = QtWidgets.QLabel("Name")
@@ -112,7 +119,7 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         layout.addWidget(self.color_label)
         layout.addWidget(self.colorButton)
         self.color_dialog = QtWidgets.QColorDialog()
-        self.color_dialog.currentColorChanged.connect(self.save_selected_color)
+        self.color_dialog.colorSelected.connect(self.save_selected_color)
 
         # transform field
         self.transform_label = QtWidgets.QLabel("Position")
@@ -138,15 +145,16 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         self.name_edit_box.setText(primitive.name())
         self.colorButton.setStyleSheet(
             f"background-color:{ primitive.color().name()}")
-        
-        self.transform_widget.populate_fields(primitive.position(), primitive.setPosition)
-        self.rotation_widget.populate_fields(primitive.rotation(), primitive.setRotation)
 
+        self.transform_widget.populate_fields(
+            primitive.position(), primitive.setPosition)
+        self.rotation_widget.populate_fields(
+            primitive.rotation(), primitive.setRotation)
 
     def delete_primitive(self):
-        
-        # TODO: if this is last primitive object, 
-        # app freezes until creating a new one 
+
+        # TODO: if this is last primitive object,
+        # app freezes until creating a new one
 
         # delete from list widget
         listView = self.listItem.listWidget()
@@ -169,6 +177,7 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         self.colorButton.setStyleSheet(f"background-color:{new_color.name()}")
         self.primitiveObject.setColor(new_color)
 
+
 class SphereEditorWidget(PrimitiveEditorWidget):
     def __init__(self):
         PrimitiveEditorWidget.__init__(self)
@@ -181,12 +190,12 @@ class SphereEditorWidget(PrimitiveEditorWidget):
         self.layout.addWidget(self.radius_edit)
 
         self.setLayout(self.layout)
-    
+
     def radius_changed(self, text):
         num = validate_float(text)
         if num is not None:
             self.primitiveObject.setRadius(num)
-    
+
     def populate_fields(self, listItem, primitive):
         super().populate_fields(listItem, primitive)
         self.radius_edit.setText(str(round(self.primitiveObject.radius(), 5)))
@@ -219,14 +228,14 @@ class CubeEditorWidget(PrimitiveEditorWidget):
         self.layout.addWidget(self.height_edit)
 
         self.setLayout(self.layout)
-    
+
     def populate_fields(self, listItem, primitive):
         super().populate_fields(listItem, primitive)
         self.length_edit.setText(str(round(self.primitiveObject.length(), 5)))
         self.width_edit.setText(str(round(self.primitiveObject.width(), 5)))
         self.height_edit.setText(str(round(self.primitiveObject.height(), 5)))
         self.show()
-    
+
     def length_changed(self, text):
         num = validate_float(text)
         if num is not None:

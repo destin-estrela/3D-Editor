@@ -12,7 +12,7 @@
             "y": 0.0,
             "z": 0.0
          },
-         "color": "#0b0fff",
+         "color": "#158eff",
          "type": "sphere",
          "primitive_specific": {
             "radius": 3.0
