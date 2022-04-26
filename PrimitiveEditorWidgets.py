@@ -80,6 +80,9 @@ class XYZEditorWidget(QtWidgets.QWidget):
             self.vector.setZ(float(text))
             self.setVector(self.vector)
 
+"""
+The UI for editing a primitive objects fields
+"""
 class PrimitiveEditorWidget(QtWidgets.QWidget):
     def __init__(self):
         QtWidgets.QWidget.__init__(self)

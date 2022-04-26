@@ -38,7 +38,6 @@ class Primitive(QtCore.QObject):
         self.m_Entity.addComponent(self.picker)
     
     def primitiveClicked(self):
-        print(f"{self.m_displayName} clicked!")
         self.shapeEditor.handleClickedPrimitive(self)
 
     """
