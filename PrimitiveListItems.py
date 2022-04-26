@@ -24,14 +24,6 @@ class CubeListItem(PrimitiveListItem):
     def __init__(self, name, sceneObject):
         super().__init__(name, sceneObject)
 
-    def activate_primitive_editor(self):
-        new_widget = CubeEditorWidget(self)
-        return new_widget
-
 class SphereListItem(PrimitiveListItem):
     def __init__(self, name, sceneObject):
         super().__init__(name, sceneObject)
-
-    def activate_primitive_editor(self):
-        new_widget = SphereEditorWidget(self)
-        return new_widget

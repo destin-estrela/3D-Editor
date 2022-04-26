@@ -149,6 +149,9 @@ class Sphere(Primitive):
     
     def radius(self):
         return self.sphereMesh.radius()
+
+    def primitiveType(self):
+        return 'sphere'
     
     def setRadius(self, radius, doPersist=True):
         self.sphereMesh.setRadius(radius)
@@ -195,7 +198,9 @@ class Cube(Primitive):
         self.setWidth(cubeInfo['width'], False)
         self.setHeight(cubeInfo['height'], False)
 
-    
+    def primitiveType(self):
+        return 'cube'
+
     def length(self):
         return self.cuboid.xExtent()
     

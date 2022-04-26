@@ -4,11 +4,11 @@ from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DInput import Qt3DInput
-from Primitives import * 
-from PrimitiveEditorWidgets import * 
-from PrimitiveListItems import * 
+from Primitives import *
+from PrimitiveEditorWidgets import *
+from PrimitiveListItems import *
 
-# SOURCES: Anything besides QT documentation listed here 
+# SOURCES: Anything besides QT documentation listed here
 # https://www.tutorialspoint.com/pyqt/pyqt_qstackedwidget.htm
 # https://stackoverflow.com/questions/60585973/pyside2-qt3d-mesh-does-not-show-up
 # https://wiki.qt.io/Qt_for_Python_Tutorial_ClickableButton
@@ -18,20 +18,21 @@ from PrimitiveListItems import *
 # https://stackoverflow.com/questions/4625102/how-to-replace-a-widget-with-another-using-qt
 # https://stackoverflow.com/questions/33793315/how-to-use-spacers-in-qt
 
+
 class ShapeEditor(QtCore.QObject):
-    def __init__(self, root_entity=None, cameraEntity=None, objectListWidget=None, mainLayout=None):
+    def __init__(self, rootEntity, cameraEntity, objectListWidget, stackedLayout):
         super().__init__()
-        self.mainLayout = mainLayout
-        self.m_rootEntity = root_entity
+        self.stackedLayout = stackedLayout
+        self.m_rootEntity = rootEntity
         self.m_cameraEntity = cameraEntity
         self.m_objectListWidget = objectListWidget
         self.m_currentPrimitiveObjectEditor = None
 
         # connect list widget to functionality
-        self.m_objectListWidget.itemClicked.connect(self.initPrimitiveEditorWidget)
+        self.m_objectListWidget.itemClicked.connect(
+            self.initPrimitiveEditorWidget)
 
     def createCube(self):
-        print("created cube")
         cube = Cube(self.m_rootEntity, self.m_cameraEntity)
         cubeListItem = CubeListItem(cube.m_displayName, cube)
         self.initPrimitiveEditorWidget(cubeListItem)
@@ -44,35 +45,32 @@ class ShapeEditor(QtCore.QObject):
         self.initPrimitiveEditorWidget(sphereListItem)
         self.m_objectListWidget.addItem(sphereListItem)
         return sphereListItem
-    
-    def initPrimitiveEditorWidget(self, item):
-        newWidget = item.activate_primitive_editor()
-        if self.m_currentPrimitiveObjectEditor:
-            self.m_currentPrimitiveObjectEditor.deleteLater()
 
-        self.mainLayout.addWidget(newWidget)
-        self.m_currentPrimitiveObjectEditor = newWidget
+    def initPrimitiveEditorWidget(self, item):
+        self.stackedLayout.openPrimitiveEditor(item)
 
     """
     Creates and populates editor with persisted primitive objects
     """
+
     def restoreData(self):
         database = db.getDb(PRIMITIVE_OBJECTS)
         json_data = database.getAll()
 
         for primitive in json_data:
             if primitive['type'] == 'cube':
-                cube = Cube(self.m_rootEntity, self.m_cameraEntity, primitive['id'])
+                cube = Cube(self.m_rootEntity,
+                            self.m_cameraEntity, primitive['id'])
                 listItem = CubeListItem(cube.m_displayName, cube)
                 cube.restore(primitive)
             elif primitive['type'] == 'sphere':
-                sphere = Sphere(self.m_rootEntity, self.m_cameraEntity, primitive['id'])
+                sphere = Sphere(self.m_rootEntity,
+                                self.m_cameraEntity, primitive['id'])
                 listItem = SphereListItem(sphere.m_displayName, sphere)
                 sphere.restore(primitive)
             else:
                 print("Found invalid object in database")
                 continue
-            
 
             listItem.setName(primitive['name'])
             self.m_objectListWidget.addItem(listItem)
@@ -101,35 +99,57 @@ def initialize_lighting(rootEntity, cameraEntity):
     lightEntity.addComponent(lightTransform)
 
 
-class PrimitiveCreatorWidget(QtWidgets.QWidget):
-    def __init__(self, rootEntity, cameraEntity):
+class RightSideMenu(QtWidgets.QWidget):
+
+    PRIMITIVE_MAP = {'sphere': 1, 'cube': 2}
+
+    def __init__(self):
+        QtWidgets.QWidget.__init__(self)
+        layout = QtWidgets.QVBoxLayout(self)
+        self.setLayout(layout)
+        self.stackWidget = QtWidgets.QStackedWidget(self)
+        self.setMinimumSize(100, 100)
+        self.setMaximumWidth(300)
+
+
+        self.sphereEditor = SphereEditorWidget()
+        self.boxEditor = CubeEditorWidget()
+        self.emptyWidget = QtWidgets.QWidget()
+
+        self.stackWidget.addWidget(self.emptyWidget)
+        self.stackWidget.addWidget(self.sphereEditor)
+        self.stackWidget.addWidget(self.boxEditor)
+
+        layout.addWidget(self.stackWidget, 1)
+
+    def openPrimitiveEditor(self, listItem):
+        primObj = listItem.sceneObject()
+        self.stackWidget.setCurrentIndex(self.PRIMITIVE_MAP[primObj.primitiveType()])
+        self.stackWidget.currentWidget().populate_fields(listItem, primObj)
+
+
+class LeftSideMenu(QtWidgets.QWidget):
+    def __init__(self, shapeEditor, objectList):
         QtWidgets.QWidget.__init__(self)
         layout = QtWidgets.QVBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignTop)
         self.setLayout(layout)
         self.setMinimumSize(100, 100)
-        self.setMaximumWidth(200)
+        self.setMaximumWidth(300)
 
-        self.objectList = QtWidgets.QListWidget(self)
-        self.shapeEditor = ShapeEditor(rootEntity, cameraEntity, self.objectList, layout)
-
+        # buttons to create primitives
         createCubeButton = QtWidgets.QPushButton(self)
         createCubeButton.setText("Create Cube")
-
         createSphereButton = QtWidgets.QPushButton(self)
         createSphereButton.setText("Create Sphere")
 
-        createCubeButton.clicked.connect(self.shapeEditor.createCube)
-        createSphereButton.clicked.connect(self.shapeEditor.createSphere)
-
+        createCubeButton.clicked.connect(shapeEditor.createCube)
+        createSphereButton.clicked.connect(shapeEditor.createSphere)
 
         layout.addWidget(createCubeButton)
         layout.addWidget(createSphereButton)
-        layout.addWidget(self.objectList)
+        layout.addWidget(objectList)
 
-       
-        self.shapeEditor.restoreData()
-        self.show()
 
 
 class Application(QtWidgets.QWidget):
@@ -138,10 +158,17 @@ class Application(QtWidgets.QWidget):
         layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
 
-    
-        self.shapeCreatorWidget = PrimitiveCreatorWidget(rootEntity, cameraEntity)
-        layout.addWidget(self.shapeCreatorWidget, 1)
+        self.rightMenu = RightSideMenu()
+        self.objectList = QtWidgets.QListWidget(self)
+        self.shapeEditor = ShapeEditor(
+            rootEntity, cameraEntity, self.objectList, self.rightMenu)
+        self.leftMenu = LeftSideMenu(self.shapeEditor, self.objectList)
+
+        layout.addWidget(self.leftMenu, 1)
         layout.addWidget(container, 1)
+        layout.addWidget(self.rightMenu, 1)
+
+        self.shapeEditor.restoreData()
 
         self.setWindowTitle("3D Editor")
         self.resize(1200, 800)
@@ -168,7 +195,7 @@ if __name__ == "__main__":
     input_ = Qt3DInput.QInputAspect()
     view.registerAspect(input_)
 
-    #init app
+    # init app
     appWidget = Application(rootEntity, cameraEntity, container)
 
     sys.exit(app.exec_())
