@@ -44,22 +44,22 @@ class Primitive(QtCore.QObject):
     """
     Setters
     """
-    def setRotation(self, vector):
+    def setRotation(self, vector, doPersist=True):
         quat = QtGui.QQuaternion.fromEulerAngles(vector)
         self.transform.setRotation(quat)
-        self.persist()
+        self.persist(doPersist)
     
-    def setPosition(self, vector):
+    def setPosition(self, vector, doPersist=True):
         self.transform.setTranslation(vector)
-        self.persist()
+        self.persist(doPersist)
 
-    def setColor(self, color):
+    def setColor(self, color, doPersist=True):
         self.m_material.setDiffuse(color)
-        self.persist()
+        self.persist(doPersist)
 
-    def setName(self, name):
+    def setName(self, name, doPersist=True):
         self.m_displayName = name
-        self.persist()
+        self.persist(doPersist)
     
     """
     Getters
@@ -83,21 +83,24 @@ class Primitive(QtCore.QObject):
         # restore position
         xyz_dict = json_dict['position']
         vector = QtGui.QVector3D(xyz_dict['x'], xyz_dict['y'], xyz_dict['z'])
-        self.setPosition(vector)
+        self.setPosition(vector, False)
 
         # restore rotation
         xyz_dict = json_dict['rotation']
         vector = QtGui.QVector3D(xyz_dict['x'], xyz_dict['y'], xyz_dict['z'])
-        self.setRotation(vector)
+        self.setRotation(vector, False)
 
         # restore color
         color_str = json_dict['color']
-        self.setColor(QtGui.QColor(color_str))
+        self.setColor(QtGui.QColor(color_str), False)
     
     """
     Persist object fields and save to local storage
     """
-    def persist(self):
+    def persist(self, doPersist):
+        if not doPersist:
+            return 
+
         object_dict = self.toDict()
         database = db.getDb(PRIMITIVE_OBJECTS)
 
@@ -132,6 +135,10 @@ class Sphere(Primitive):
 
         self.m_Entity.addComponent(self.sphereMesh)
         self.m_displayName = f'Sphere {Sphere.sphereTag}'
+
+        if persist_id is None:
+            self.persist(True)
+
         Sphere.sphereTag += 1
     
     def toDict(self):
@@ -143,9 +150,15 @@ class Sphere(Primitive):
     def radius(self):
         return self.sphereMesh.radius()
     
-    def setRadius(self, radius):
+    def setRadius(self, radius, doPersist=True):
         self.sphereMesh.setRadius(radius)
-        self.persist()
+        self.persist(doPersist)
+    
+    def restore(self, json_dict):
+        super().restore(json_dict)
+        cubeInfo = json_dict['primitive_specific']
+        self.setRadius(cubeInfo['radius'], False)
+     
 
 """
 Represents a cubical 3D object
@@ -160,6 +173,10 @@ class Cube(Primitive):
         self.m_Entity.addComponent(self.cuboid)
         self.m_displayName = f'Cube {Cube.cubeTag}'
         self.transform.setScale(4.0)
+
+        if persist_id is None:
+            self.persist(True)
+
         Cube.cubeTag += 1
 
     def toDict(self):
@@ -171,6 +188,14 @@ class Cube(Primitive):
             'height': self.cuboid.yExtent()}
         return object_dict
     
+    def restore(self, json_dict):
+        super().restore(json_dict)
+        cubeInfo = json_dict['primitive_specific']
+        self.setLength(cubeInfo['length'], False)
+        self.setWidth(cubeInfo['width'], False)
+        self.setHeight(cubeInfo['height'], False)
+
+    
     def length(self):
         return self.cuboid.xExtent()
     
@@ -180,14 +205,14 @@ class Cube(Primitive):
     def height(self):
         return self.cuboid.yExtent()
     
-    def setLength(self, length):
+    def setLength(self, length, doPersist=True):
         self.cuboid.setXExtent(length)
-        self.persist()
+        self.persist(doPersist)
 
-    def setWidth(self, length):
+    def setWidth(self, length, doPersist=True):
         self.cuboid.setZExtent(length)
-        self.persist()
+        self.persist(doPersist)
 
-    def setHeight(self, length):
+    def setHeight(self, length, doPersist=True):
         self.cuboid.setYExtent(length)
-        self.persist()
+        self.persist(doPersist)

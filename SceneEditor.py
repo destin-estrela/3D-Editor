@@ -30,7 +30,6 @@ class ShapeEditor(QtCore.QObject):
 
     def createCube(self):
         cube = Cube(self.m_rootEntity, self.m_cameraEntity)
-        cube.persist()
         cubeListItem = CubeListItem(cube.m_displayName, cube)
         self.initPrimitiveEditorWidget(cubeListItem)
         self.m_objectListWidget.addItem(cubeListItem)
@@ -38,7 +37,6 @@ class ShapeEditor(QtCore.QObject):
 
     def createSphere(self):
         sphere = Sphere(self.m_rootEntity, self.m_cameraEntity)
-        sphere.persist()
         sphereListItem = SphereListItem(sphere.m_displayName, sphere)
         self.initPrimitiveEditorWidget(sphereListItem)
         self.m_objectListWidget.addItem(sphereListItem)
