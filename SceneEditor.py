@@ -26,10 +26,17 @@ class ShapeEditor(QtCore.QObject):
         self.m_rootEntity = rootEntity
         self.m_cameraEntity = cameraEntity
         self.m_objectListWidget = objectListWidget
-        self.m_currentPrimitiveObjectEditor = None
 
         # connect list widget to functionality
+        self.m_objectListWidget.itemActivated.connect(
+            self.initPrimitiveEditorWidget)
+        # connect list widget to functionality
         self.m_objectListWidget.itemClicked.connect(
+            self.initPrimitiveEditorWidget)
+         # connect list widget to functionality
+        self.m_objectListWidget.itemDoubleClicked.connect(
+            self.initPrimitiveEditorWidget)
+        self.m_objectListWidget.itemEntered.connect(
             self.initPrimitiveEditorWidget)
 
     def createCube(self):
@@ -52,7 +59,6 @@ class ShapeEditor(QtCore.QObject):
     """
     Creates and populates editor with persisted primitive objects
     """
-
     def restoreData(self):
         database = db.getDb(PRIMITIVE_OBJECTS)
         json_data = database.getAll()
@@ -76,29 +82,6 @@ class ShapeEditor(QtCore.QObject):
             self.m_objectListWidget.addItem(listItem)
 
 
-def initialize_camera(view, rootEntity):
-    cameraEntity = view.camera()
-    cameraEntity.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
-    cameraEntity.setPosition(QtGui.QVector3D(0, 0, 20.0))
-    cameraEntity.setUpVector(QtGui.QVector3D(0, 1, 0))
-    cameraEntity.setViewCenter(QtGui.QVector3D(0, 0, 0))
-    camController = Qt3DExtras.QOrbitCameraController(rootEntity)
-    camController.setCamera(cameraEntity)
-    return cameraEntity
-
-
-def initialize_lighting(rootEntity, cameraEntity):
-    lightEntity = Qt3DCore.QEntity(rootEntity)
-    light = Qt3DRender.QPointLight(lightEntity)
-    light.setColor("white")
-    light.setIntensity(1)
-    lightEntity.addComponent(light)
-
-    lightTransform = Qt3DCore.QTransform(lightEntity)
-    lightTransform.setTranslation(cameraEntity.position())
-    lightEntity.addComponent(lightTransform)
-
-
 class RightSideMenu(QtWidgets.QWidget):
 
     PRIMITIVE_MAP = {'sphere': 1, 'cube': 2}
@@ -108,7 +91,7 @@ class RightSideMenu(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout(self)
         self.setLayout(layout)
         self.stackWidget = QtWidgets.QStackedWidget(self)
-        self.setMinimumSize(100, 100)
+        self.setMinimumSize(300, 300)
         self.setMaximumWidth(300)
 
 
@@ -134,20 +117,20 @@ class LeftSideMenu(QtWidgets.QWidget):
         layout = QtWidgets.QVBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignTop)
         self.setLayout(layout)
-        self.setMinimumSize(100, 100)
+        self.setMinimumSize(300, 300)
         self.setMaximumWidth(300)
 
         # buttons to create primitives
-        createCubeButton = QtWidgets.QPushButton(self)
-        createCubeButton.setText("Create Cube")
-        createSphereButton = QtWidgets.QPushButton(self)
-        createSphereButton.setText("Create Sphere")
+        self.createCubeButton = QtWidgets.QPushButton(self)
+        self.createCubeButton.setText("Create Cube")
+        self.createSphereButton = QtWidgets.QPushButton(self)
+        self.createSphereButton.setText("Create Sphere")
 
-        createCubeButton.clicked.connect(shapeEditor.createCube)
-        createSphereButton.clicked.connect(shapeEditor.createSphere)
+        self.createCubeButton.clicked.connect(shapeEditor.createCube)
+        self.createSphereButton.clicked.connect(shapeEditor.createSphere)
 
-        layout.addWidget(createCubeButton)
-        layout.addWidget(createSphereButton)
+        layout.addWidget(self.createCubeButton)
+        layout.addWidget(self.createSphereButton)
         layout.addWidget(objectList)
 
 
@@ -157,15 +140,17 @@ class Application(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self)
         layout = QtWidgets.QHBoxLayout()
         self.setLayout(layout)
-
+        self.rootEntity = rootEntity
+        self.container = container
+        self.cameraEntity = cameraEntity
         self.rightMenu = RightSideMenu()
         self.objectList = QtWidgets.QListWidget(self)
         self.shapeEditor = ShapeEditor(
-            rootEntity, cameraEntity, self.objectList, self.rightMenu)
+            self.rootEntity, self.cameraEntity, self.objectList, self.rightMenu)
         self.leftMenu = LeftSideMenu(self.shapeEditor, self.objectList)
 
         layout.addWidget(self.leftMenu, 1)
-        layout.addWidget(container, 1)
+        layout.addWidget(self.container, 1)
         layout.addWidget(self.rightMenu, 1)
 
         self.shapeEditor.restoreData()
@@ -173,6 +158,30 @@ class Application(QtWidgets.QWidget):
         self.setWindowTitle("3D Editor")
         self.resize(1200, 800)
         self.show()
+
+
+def initialize_camera(view, rootEntity):
+    cameraEntity = view.camera()
+    cameraEntity.lens().setPerspectiveProjection(45.0, 16.0 / 9.0, 0.1, 1000.0)
+    cameraEntity.setPosition(QtGui.QVector3D(0, 0, 20.0))
+    cameraEntity.setUpVector(QtGui.QVector3D(0, 1, 0))
+    cameraEntity.setViewCenter(QtGui.QVector3D(0, 0, 0))
+    camController = Qt3DExtras.QOrbitCameraController(rootEntity)
+    camController.setCamera(cameraEntity)
+    return cameraEntity
+
+
+def initialize_lighting(rootEntity, cameraEntity):
+    lightEntity = Qt3DCore.QEntity(rootEntity)
+    light = Qt3DRender.QPointLight(lightEntity)
+    light.setColor("white")
+    light.setIntensity(1)
+    lightEntity.addComponent(light)
+
+    lightTransform = Qt3DCore.QTransform(lightEntity)
+    lightTransform.setTranslation(cameraEntity.position())
+    lightEntity.addComponent(lightTransform)
+    return lightEntity
 
 
 if __name__ == "__main__":
@@ -183,12 +192,12 @@ if __name__ == "__main__":
     view.defaultFrameGraph().setClearColor(QtGui.QColor("#4d4d4f"))
     container = QtWidgets.QWidget.createWindowContainer(view)
     screenSize = view.screen().size()
-    container.setMinimumSize(QtCore.QSize(400, 400))
+    container.setMinimumSize(QtCore.QSize(800, 800))
     container.setMaximumSize(screenSize)
 
     rootEntity = Qt3DCore.QEntity()
     cameraEntity = initialize_camera(view, rootEntity)
-    initialize_lighting(rootEntity, cameraEntity)
+    lightEntity = initialize_lighting(rootEntity, cameraEntity)
     view.setRootEntity(rootEntity)
 
     # init input

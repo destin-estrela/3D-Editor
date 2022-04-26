@@ -143,15 +143,18 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
 
 
     def delete_primitive(self):
-
-        # remove 3D primitive
-        self.primitiveObject.remove()
+        
+        # TODO: if this is last primitive object, 
+        # app freezes until creating a new one 
 
         # delete from list widget
         listView = self.listItem.listWidget()
-        listView.takeItem(listView.row(self.listItem))
+        item = listView.takeItem(listView.row(self.listItem))
+        item.sceneObject().remove()
 
         # hide this dialog until it is garbage collected
+        self.listItem = None
+        self.primitiveObject = None
         self.hide()
 
     def name_changed(self, text):
@@ -186,6 +189,7 @@ class SphereEditorWidget(PrimitiveEditorWidget):
     def populate_fields(self, listItem, primitive):
         super().populate_fields(listItem, primitive)
         self.radius_edit.setText(str(round(self.primitiveObject.radius(), 5)))
+        self.show()
 
 
 class CubeEditorWidget(PrimitiveEditorWidget):
@@ -220,6 +224,7 @@ class CubeEditorWidget(PrimitiveEditorWidget):
         self.length_edit.setText(str(round(self.primitiveObject.length(), 5)))
         self.width_edit.setText(str(round(self.primitiveObject.width(), 5)))
         self.height_edit.setText(str(round(self.primitiveObject.height(), 5)))
+        self.show()
     
     def length_changed(self, text):
         num = validate_float(text)

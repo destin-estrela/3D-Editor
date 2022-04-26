@@ -14,7 +14,7 @@ PRIMITIVE_OBJECTS = "primitive_objects.json"
 Represents a generic namable, colorable three-dimensional primitive object
 """
 class Primitive(QtCore.QObject):
-    def __init__(self, root_entity=None, cameraEntity=None, persist_id=None):
+    def __init__(self, root_entity, cameraEntity, persist_id=None):
         super().__init__()
         self.m_rootEntity = root_entity
         self.m_cameraEntity = cameraEntity
@@ -93,6 +93,8 @@ class Primitive(QtCore.QObject):
         # restore color
         color_str = json_dict['color']
         self.setColor(QtGui.QColor(color_str), False)
+
+        self.setName(json_dict['name'], False)
     
     """
     Persist object fields and save to local storage
