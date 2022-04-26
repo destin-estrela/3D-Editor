@@ -29,7 +29,16 @@ class Primitive(QtCore.QObject):
         )
         self.m_Entity.addComponent(self.m_material)
         self.m_Entity.addComponent(self.transform)
+
+        self.picker = Qt3DRender.QObjectPicker()
+        self.picker.setHoverEnabled(True)
+        self.picker.setDragEnabled(True)
+        self.picker.clicked.connect(self.primitiveClicked)
+        self.m_Entity.addComponent(self.picker)
     
+    def primitiveClicked(self):
+        print(f"{self.m_displayName} clicked!")
+
     """
     Deletes 3D object and removes from the databased 
     """

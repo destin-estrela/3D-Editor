@@ -195,6 +195,12 @@ if __name__ == "__main__":
     container.setMinimumSize(QtCore.QSize(800, 800))
     container.setMaximumSize(screenSize)
 
+    render_settings = view.renderSettings()
+    picking_settings = render_settings.pickingSettings()
+    picking_settings.setFaceOrientationPickingMode(Qt3DRender.QPickingSettings.FrontAndBackFace)
+    picking_settings.setPickMethod(Qt3DRender.QPickingSettings.PrimitivePicking)
+    picking_settings.setPickResultMode(Qt3DRender.QPickingSettings.NearestPick)
+    
     rootEntity = Qt3DCore.QEntity()
     cameraEntity = initialize_camera(view, rootEntity)
     lightEntity = initialize_lighting(rootEntity, cameraEntity)
