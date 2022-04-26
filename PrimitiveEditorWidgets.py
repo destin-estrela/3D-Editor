@@ -82,7 +82,7 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         QtWidgets.QWidget.__init__(self)
 
         self.listItem = listItem
-        self.primitiveObject = listItem.sceneObject
+        self.primitiveObject = listItem.sceneObject()
 
         layout = QtWidgets.QVBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignTop)
@@ -97,8 +97,8 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
 
 
         # name field
-        self.name = QtWidgets.QLabel("Name")
-        layout.addWidget(self.name)
+        self.name_label = QtWidgets.QLabel("Name")
+        layout.addWidget(self.name_label)
         self.name_edit_box = QtWidgets.QLineEdit(self.primitiveObject.name())
         layout.addWidget(self.name_edit_box)
         self.name_edit_box.textChanged.connect(self.name_changed)
@@ -150,7 +150,7 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
 
     def name_changed(self, text):
         self.primitiveObject.setName(text)
-        self.listItem.setText(text)
+        self.listItem.setName(text)
 
     def open_color_dialog(self):
         self.color_dialog.open()

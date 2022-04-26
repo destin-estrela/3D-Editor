@@ -58,7 +58,7 @@ class Primitive(QtCore.QObject):
         self.persist()
 
     def setName(self, name):
-        self.m_Entity = name
+        self.m_displayName = name
         self.persist()
     
     """
@@ -83,16 +83,16 @@ class Primitive(QtCore.QObject):
         # restore position
         xyz_dict = json_dict['position']
         vector = QtGui.QVector3D(xyz_dict['x'], xyz_dict['y'], xyz_dict['z'])
-        self.set_position(vector)
+        self.setPosition(vector)
 
         # restore rotation
         xyz_dict = json_dict['rotation']
         vector = QtGui.QVector3D(xyz_dict['x'], xyz_dict['y'], xyz_dict['z'])
-        self.set_rotation(vector)
+        self.setRotation(vector)
 
         # restore color
         color_str = json_dict['color']
-        self.set_color(QtGui.QColor(color_str))
+        self.setColor(QtGui.QColor(color_str))
     
     """
     Persist object fields and save to local storage
@@ -124,8 +124,8 @@ Represents a spherical 3D object
 class Sphere(Primitive):
     sphereTag = 1
 
-    def __init__(self, root_entity=None, cameraEntity=None):
-        super().__init__(root_entity, cameraEntity)
+    def __init__(self, root_entity=None, cameraEntity=None, persist_id=None):
+        super().__init__(root_entity, cameraEntity, persist_id)
 
         self.sphereMesh = Qt3DExtras.QSphereMesh(
             rings=20, slices=20, radius=2)
@@ -153,8 +153,8 @@ Represents a cubical 3D object
 class Cube(Primitive):
     cubeTag = 1
 
-    def __init__(self, root_entity=None, cameraEntity=None):
-        super().__init__(root_entity, cameraEntity)
+    def __init__(self, root_entity=None, cameraEntity=None, persist_id=None):
+        super().__init__(root_entity, cameraEntity, persist_id)
         self.cuboid = Qt3DExtras.QCuboidMesh()
 
         self.m_Entity.addComponent(self.cuboid)

@@ -12,14 +12,56 @@
             "y": 0.0,
             "z": 0.0
          },
-         "color": "#fff133",
+         "color": "#59ff26",
          "type": "cube",
          "primitive_specific": {
             "length": 1.0,
             "width": 1.0,
             "height": 1.0
          },
-         "id": 823149283750142629
+         "id": 246491531091127883
+      },
+      {
+         "name": "Cube 2",
+         "position": {
+            "x": 3.070817470550537,
+            "y": 1.2682371139526367,
+            "z": -5.335333824157715
+         },
+         "rotation": {
+            "x": -0.0,
+            "y": 0.0,
+            "z": 0.0
+         },
+         "color": "#a0a0a4",
+         "type": "cube",
+         "primitive_specific": {
+            "length": 1.0,
+            "width": 1.0,
+            "height": 1.0
+         },
+         "id": 225336118419355734
+      },
+      {
+         "name": "Cube 3",
+         "position": {
+            "x": 4.3978729248046875,
+            "y": 1.9019501209259033,
+            "z": -10.965465545654297
+         },
+         "rotation": {
+            "x": -0.0,
+            "y": 0.0,
+            "z": 0.0
+         },
+         "color": "#a0a0a4",
+         "type": "cube",
+         "primitive_specific": {
+            "length": 1.0,
+            "width": 1.0,
+            "height": 1.0
+         },
+         "id": 188773635252237109
       }
    ]
 }
