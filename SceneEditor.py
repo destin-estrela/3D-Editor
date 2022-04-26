@@ -18,7 +18,9 @@ from PrimitiveListItems import *
 # https://stackoverflow.com/questions/4625102/how-to-replace-a-widget-with-another-using-qt
 # https://stackoverflow.com/questions/33793315/how-to-use-spacers-in-qt
 
-
+"""
+Handles creating primitive objects and connecting them to UI
+"""
 class ShapeEditor(QtCore.QObject):
     def __init__(self, rootEntity, cameraEntity, objectListWidget, stackedLayout):
         super().__init__()
@@ -30,10 +32,8 @@ class ShapeEditor(QtCore.QObject):
         # connect list widget to functionality
         self.m_objectListWidget.itemActivated.connect(
             self.initPrimitiveEditorWidget)
-        # connect list widget to functionality
         self.m_objectListWidget.itemClicked.connect(
             self.initPrimitiveEditorWidget)
-         # connect list widget to functionality
         self.m_objectListWidget.itemDoubleClicked.connect(
             self.initPrimitiveEditorWidget)
         self.m_objectListWidget.itemEntered.connect(
@@ -56,6 +56,10 @@ class ShapeEditor(QtCore.QObject):
     def initPrimitiveEditorWidget(self, item):
         self.stackedLayout.openPrimitiveEditor(item)
     
+    
+    """
+    Finds and opens editor menu for supplied primitive
+    """
     def handleClickedPrimitive(self, primitive):
         for i in range(self.m_objectListWidget.count()):
             listItem = self.m_objectListWidget.item(i)
@@ -88,7 +92,9 @@ class ShapeEditor(QtCore.QObject):
             listItem.setName(primitive['name'])
             self.m_objectListWidget.addItem(listItem)
 
-
+"""
+Contains primitive editor widgets
+"""
 class RightSideMenu(QtWidgets.QWidget):
 
     PRIMITIVE_MAP = {'sphere': 1, 'cube': 2}
@@ -112,12 +118,17 @@ class RightSideMenu(QtWidgets.QWidget):
 
         layout.addWidget(self.stackWidget, 1)
 
+    """
+    Determines the type of the list item and opens and populates the correct primitive editor
+    """
     def openPrimitiveEditor(self, listItem):
         primObj = listItem.sceneObject()
         self.stackWidget.setCurrentIndex(self.PRIMITIVE_MAP[primObj.primitiveType()])
         self.stackWidget.currentWidget().populate_fields(listItem, primObj)
 
-
+"""
+Contains the object list and the create primitive buttons
+"""
 class LeftSideMenu(QtWidgets.QWidget):
     def __init__(self, shapeEditor, objectList):
         QtWidgets.QWidget.__init__(self)
@@ -140,8 +151,6 @@ class LeftSideMenu(QtWidgets.QWidget):
         layout.addWidget(self.createSphereButton)
         layout.addWidget(objectList)
 
-
-
 class Application(QtWidgets.QWidget):
     def __init__(self, rootEntity, cameraEntity, container):
         QtWidgets.QWidget.__init__(self)
@@ -150,6 +159,7 @@ class Application(QtWidgets.QWidget):
         self.rootEntity = rootEntity
         self.container = container
         self.cameraEntity = cameraEntity
+
         self.rightMenu = RightSideMenu()
         self.objectList = QtWidgets.QListWidget(self)
         self.shapeEditor = ShapeEditor(
@@ -202,12 +212,14 @@ if __name__ == "__main__":
     container.setMinimumSize(QtCore.QSize(800, 800))
     container.setMaximumSize(screenSize)
 
+    # init picker for selecting objects in 3d scene
     render_settings = view.renderSettings()
     picking_settings = render_settings.pickingSettings()
     picking_settings.setFaceOrientationPickingMode(Qt3DRender.QPickingSettings.FrontAndBackFace)
     picking_settings.setPickMethod(Qt3DRender.QPickingSettings.PrimitivePicking)
     picking_settings.setPickResultMode(Qt3DRender.QPickingSettings.NearestPick)
     
+    # init core entities
     rootEntity = Qt3DCore.QEntity()
     cameraEntity = initialize_camera(view, rootEntity)
     lightEntity = initialize_lighting(rootEntity, cameraEntity)

@@ -131,8 +131,6 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         self.listItem = None
         self.primitiveObject = None
 
-        
-    
     def populate_fields(self, listItem, primitive):
         self.listItem = listItem
         self.primitiveObject = primitive

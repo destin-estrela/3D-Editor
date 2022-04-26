@@ -41,7 +41,7 @@ class Primitive(QtCore.QObject):
         self.shapeEditor.handleClickedPrimitive(self)
 
     """
-    Deletes 3D object and removes from the databased 
+    Deletes 3D object and removes it from the database
     """
     def remove(self):
         database = db.getDb(PRIMITIVE_OBJECTS)
@@ -50,10 +50,7 @@ class Primitive(QtCore.QObject):
 
         self.m_Entity.setEnabled(False)
         self.deleteLater()
- 
-    """
-    Setters
-    """
+
     def setRotation(self, vector, doPersist=True):
         quat = QtGui.QQuaternion.fromEulerAngles(vector)
         self.transform.setRotation(quat)
@@ -70,10 +67,7 @@ class Primitive(QtCore.QObject):
     def setName(self, name, doPersist=True):
         self.m_displayName = name
         self.persist(doPersist)
-    
-    """
-    Getters
-    """
+
     def color(self):
         return self.m_material.diffuse()
     
