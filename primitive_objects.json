@@ -1,0 +1,25 @@
+{
+   "data": [
+      {
+         "name": "Cube 1",
+         "position": {
+            "x": 0.0,
+            "y": 0.0,
+            "z": 0.0
+         },
+         "rotation": {
+            "x": -0.0,
+            "y": 0.0,
+            "z": 0.0
+         },
+         "color": "#fff133",
+         "type": "cube",
+         "primitive_specific": {
+            "length": 1.0,
+            "width": 1.0,
+            "height": 1.0
+         },
+         "id": 823149283750142629
+      }
+   ]
+}

@@ -6,8 +6,10 @@ from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DInput import Qt3DInput
 
-# Returns string as a float only if it can be properly converted
-# else None
+"""
+ Returns string as a float only if it can be properly converted.
+ Otherwise, returns None without erroring.
+"""
 def validate(text):
         try:
             res = float(text)
@@ -15,14 +17,18 @@ def validate(text):
         except ValueError:
             return None
 
+"""
+A reusable widget that allows the user to edit a 3D vector
+"""
 class XYZEditorWidget(QtWidgets.QWidget):
-    def __init__(self, transform, vector, set_vector):
+    def __init__(self, transform, vector, set_vector, persist):
         QtWidgets.QWidget.__init__(self)
         layout = QtWidgets.QHBoxLayout()
         layout.setAlignment(QtCore.Qt.AlignTop)
         self.transform = transform
         self.vector = vector
         self.set_vector = set_vector
+        self.persist = persist
 
         self.X_label = QtWidgets.QLabel("X")
         self.Y_label = QtWidgets.QLabel("Y")
@@ -54,25 +60,27 @@ class XYZEditorWidget(QtWidgets.QWidget):
         self.setLayout(layout)
         self.show()
     
-    
 
     def x_changed(self, text):
         number = validate(text)
         if number:
             self.vector.setX(float(text))
             self.set_vector(self.vector)
+            self.persist()
 
     def y_changed(self, text):
         number = validate(text)
         if number:
             self.vector.setY(float(text))
             self.set_vector(self.vector)
+            self.persist()
 
     def z_changed(self, text):
         number = validate(text)
         if number:
             self.vector.setZ(float(text))
             self.set_vector(self.vector)
+            self.persist()
 
 class PrimitiveEditorWidget(QtWidgets.QWidget):
     def __init__(self, listItem):
@@ -118,7 +126,8 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         layout.addWidget(self.transform_label)
 
         self.transform_widget = XYZEditorWidget(
-            self.listItem.sceneObject.transform, self.listItem.sceneObject.transform.translation(), self.listItem.sceneObject.transform.setTranslation)
+            self.listItem.sceneObject.transform, self.listItem.sceneObject.transform.translation(), 
+            self.listItem.sceneObject.transform.setTranslation, self.persist)
         layout.addWidget(self.transform_widget)
 
         # quaternion field
@@ -126,26 +135,38 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
         layout.addWidget(self.quaternion_label)
 
         self.rotation_widget = XYZEditorWidget(
-            self.listItem.sceneObject.transform, self.listItem.sceneObject.transform.rotation().toEulerAngles(), self.set_rotation)
+            self.listItem.sceneObject.transform, 
+            self.listItem.sceneObject.transform.rotation().toEulerAngles(), 
+            self.set_rotation,
+            self.persist)
         layout.addWidget(self.rotation_widget)
         
-
         self.show()
+    
+    def persist(self):
+        self.listItem.sceneObject.persist()
     
     def set_rotation(self, vector):
         quat = QtGui.QQuaternion.fromEulerAngles(vector)
         self.listItem.sceneObject.transform.setRotation(quat)
+        self.persist()
 
     def delete_primitive(self):
+
+        # remove 3D primitive
+        self.listItem.sceneObject.remove()
+
+        # delete from list widget
         listView = self.listItem.listWidget()
-        self.listItem.sceneObject.m_Entity.setEnabled(False)
-        self.listItem.sceneObject.deleteLater()
         listView.takeItem(listView.row(self.listItem))
+
+        # hide this dialog until it is garbage collected
         self.hide()
 
     def name_changed(self, text):
         self.listItem.sceneObject.m_displayName = text
         self.listItem.setText(text)
+        self.persist()
 
     def open_color_dialog(self):
         self.color_dialog.open()
@@ -153,6 +174,7 @@ class PrimitiveEditorWidget(QtWidgets.QWidget):
     def save_selected_color(self, new_color):
         self.colorButton.setStyleSheet(f"background-color:{new_color.name()}")
         self.listItem.sceneObject.m_material.setDiffuse(new_color)
+        self.persist()
 
 class SphereEditorWidget(PrimitiveEditorWidget):
     def __init__(self, listItem):
@@ -172,6 +194,7 @@ class SphereEditorWidget(PrimitiveEditorWidget):
         num = validate(text)
         if num:
             self.listItem.sceneObject.sphereMesh.setRadius(num)
+            self.persist()
 
 
 class CubeEditorWidget(PrimitiveEditorWidget):
@@ -207,13 +230,16 @@ class CubeEditorWidget(PrimitiveEditorWidget):
         num = validate(text)
         if num:
             self.listItem.sceneObject.cuboid.setXExtent(num)
+            self.persist()
 
     def width_changed(self, text):
         num = validate(text)
         if num:
             self.listItem.sceneObject.cuboid.setZExtent(num)
+            self.persist()
 
     def height_changed(self, text):
         num = validate(text)
         if num:
             self.listItem.sceneObject.cuboid.setYExtent(num)
+            self.persist()

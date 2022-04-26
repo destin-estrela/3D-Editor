@@ -4,8 +4,8 @@ from PySide2.Qt3DCore import Qt3DCore
 from PySide2.Qt3DExtras import Qt3DExtras
 from PySide2.Qt3DRender import Qt3DRender
 from PySide2.Qt3DInput import Qt3DInput
-from threeDPrimitives import * 
-from primitiveEditorWidget import * 
+from Primitives import * 
+from PrimitiveEditorWidgets import * 
 
 # SOURCES: Anything besides QT documentation listed here 
 # https://stackoverflow.com/questions/60585973/pyside2-qt3d-mesh-does-not-show-up
@@ -26,7 +26,7 @@ class CubeListItem(PrimitiveListItem):
     def __init__(self, name, sceneObject):
         super().__init__(name, sceneObject)
 
-    def activatePrimitiveEditor(self):
+    def activate_primitive_editor(self):
         new_widget = CubeEditorWidget(self)
         return new_widget
 
@@ -34,7 +34,7 @@ class SphereListItem(PrimitiveListItem):
     def __init__(self, name, sceneObject):
         super().__init__(name, sceneObject)
     
-    def activatePrimitiveEditor(self):
+    def activate_primitive_editor(self):
         new_widget = SphereEditorWidget(self)
         return new_widget
 
@@ -49,22 +49,24 @@ class SceneEditor(QtCore.QObject):
         self.m_currentPrimitiveObjectEditor = None
 
         # connect list widget to functionality
-        self.m_objectListWidget.itemClicked.connect(self.activatePrimitiveEditor)
+        self.m_objectListWidget.itemClicked.connect(self.activate_primitive_editor)
 
     def createCube(self):
         cube = Cube(self.m_rootEntity, self.m_cameraEntity)
+        cube.persist()
         cubeListItem = CubeListItem(cube.m_displayName, cube)
-        self.activatePrimitiveEditor(cubeListItem)
+        self.activate_primitive_editor(cubeListItem)
         self.m_objectListWidget.addItem(cubeListItem)
 
     def createSphere(self):
         sphere = Sphere(self.m_rootEntity, self.m_cameraEntity)
+        sphere.persist()
         sphereListItem = SphereListItem(sphere.m_displayName, sphere)
-        self.activatePrimitiveEditor(sphereListItem)
+        self.activate_primitive_editor(sphereListItem)
         self.m_objectListWidget.addItem(sphereListItem)
     
-    def activatePrimitiveEditor(self, item):
-        newWidget = item.activatePrimitiveEditor()
+    def activate_primitive_editor(self, item):
+        newWidget = item.activate_primitive_editor()
         if self.m_currentPrimitiveObjectEditor:
             self.m_currentPrimitiveObjectEditor.deleteLater()
 
