@@ -64,20 +64,20 @@ class XYZEditorWidget(QtWidgets.QWidget):
 
     def x_changed(self, text):
         number = validate_float(text)
-        if number:
-            self.vector.setX(float(text))
+        if number is not None:
+            self.vector.setX(number)
             self.setVector(self.vector)
 
     def y_changed(self, text):
         number = validate_float(text)
-        if number:
-            self.vector.setY(float(text))
+        if number is not None:
+            self.vector.setY(number)
             self.setVector(self.vector)
 
     def z_changed(self, text):
         number = validate_float(text)
-        if number:
-            self.vector.setZ(float(text))
+        if number is not None:
+            self.vector.setZ(number)
             self.setVector(self.vector)
 
 """
@@ -184,7 +184,7 @@ class SphereEditorWidget(PrimitiveEditorWidget):
     
     def radius_changed(self, text):
         num = validate_float(text)
-        if num:
+        if num is not None:
             self.primitiveObject.setRadius(num)
     
     def populate_fields(self, listItem, primitive):
@@ -229,15 +229,15 @@ class CubeEditorWidget(PrimitiveEditorWidget):
     
     def length_changed(self, text):
         num = validate_float(text)
-        if num:
+        if num is not None:
             self.primitiveObject.setLength(num)
 
     def width_changed(self, text):
         num = validate_float(text)
-        if num:
+        if num is not None:
             self.primitiveObject.setWidth(num)
 
     def height_changed(self, text):
         num = validate_float(text)
-        if num:
+        if num is not None:
             self.primitiveObject.setHeight(num)
