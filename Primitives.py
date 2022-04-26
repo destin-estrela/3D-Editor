@@ -48,7 +48,7 @@ class Primitive(QtCore.QObject):
         if self.persist_id:
             database.deleteById(self.persist_id)
 
-        self.m_Entity.setEnabled(False)
+        self.m_Entity.removeComponent(self.m_material)
         self.deleteLater()
 
     def setRotation(self, vector, doPersist=True):
